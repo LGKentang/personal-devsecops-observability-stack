@@ -12,7 +12,8 @@ permissions:
   packages: write
 
 env:
-  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+  # Docker/OCI repository names must be lowercase — convert the owner to lowercase
+  IMAGE_PREFIX: ghcr.io/${{ toLower(github.repository_owner) }}
 
 jobs:
   build-and-push:
