@@ -1,0 +1,47 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apply-migrations
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: migrate/migrate
+          command:
+            - "migrate"
+            - "-path=/migrations"
+            - "-database"
+{{- if .Values.postgres.createSecret }}
+            - "postgres://$(PG_USER):$(PG_PASSWORD)@postgres:5432/$(PG_DB)?sslmode=disable"
+            - "up"
+          env:
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: PG_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: database
+{{- else }}
+            - "postgres://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@postgres:5432/{{ .Values.postgres.db }}?sslmode=disable"
+            - "up"
+{{- end }}
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+      volumes:
+        - name: migrations
+          configMap:
+            name: migrations-config
+{{- end }}

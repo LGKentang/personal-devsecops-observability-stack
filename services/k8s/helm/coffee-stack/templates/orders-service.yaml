@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: coffee-orders
+spec:
+  ports:
+    - port: {{ .Values.coffeeOrders.service.port }}
+      targetPort: {{ .Values.coffeeOrders.service.port }}
+  selector:
+    app: coffee-orders

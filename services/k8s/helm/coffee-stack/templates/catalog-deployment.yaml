@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coffee-catalog
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: coffee-catalog
+  template:
+    metadata:
+      labels:
+        app: coffee-catalog
+    spec:
+      containers:
+        - name: coffee-catalog
+          image: "{{ .Values.coffeeCatalog.image.repository }}:{{ .Values.coffeeCatalog.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.coffeeCatalog.service.port }}
+          resources: {{ toYaml .Values.coffeeCatalog.resources | indent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.coffeeCatalog.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.coffeeCatalog.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10

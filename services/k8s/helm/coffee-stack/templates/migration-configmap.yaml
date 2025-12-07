@@ -1,0 +1,12 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: migrations-config
+data:
+{{- $files := .Files.Glob "files/migrations/*" }}
+{{- range $path, $bytes := $files.AsSecrets }}
+  {{ base $path }}: |
+{{ indent 4 ( $.Files.Get $path ) }}
+{{- end }}
+{{- end }}
