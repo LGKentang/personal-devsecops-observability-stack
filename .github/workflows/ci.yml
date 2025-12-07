@@ -11,9 +11,7 @@ permissions:
   contents: read
   packages: write
 
-env:
-  # Docker/OCI repository names must be lowercase — convert the owner to lowercase
-  IMAGE_PREFIX: ghcr.io/${{ toLower(github.repository_owner) }}
+# IMAGE_PREFIX will be set at runtime (lowercased) after checkout
 
 jobs:
   build-and-push:
@@ -21,6 +19,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set IMAGE_PREFIX (lowercase)
+        run: |
+          owner='${{ github.repository_owner }}'
+          owner_lower=$(echo "$owner" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_PREFIX=ghcr.io/$owner_lower" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
